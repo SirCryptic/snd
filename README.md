@@ -16,7 +16,7 @@ serve and destroy
 -' website: https://nullsec.online ' email:
 -' no-reply@nullsec.online '
 
-### **-BUILD VERSION: 1.0.0**
+### **-BUILD VERSION: 1.0.3**
 
 **-Credits**
 
