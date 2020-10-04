@@ -24,4 +24,4 @@ serve and destroy
 https://github.com/SirCryptic
 
 
-PhisherPrice Version 2.5 <tagname>
+S&D PhisherPrice Lite Version 1.0.3 <tagname>
